@@ -37,8 +37,10 @@ export class SignUpController implements Controller {
       })
       return ok(account)
     } catch (error) {
-      console.error(error)
-      return serverError()
+      if (error instanceof Error) {
+        return serverError(error)
+      }
+      return serverError(new Error('Unknown error'))
     }
   }
 }
