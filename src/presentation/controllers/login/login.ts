@@ -1,5 +1,5 @@
 import { InvalidParamError, MissingParamError } from '../../errors'
-import { badRequest } from '../../helpers/http-helper'
+import { badRequest, serverError } from '../../helpers/http-helper'
 import type { Controller, HttpRequest, HttpResponse } from '../../protocols'
 import type { EmailValidator } from '../signup/signup-protocols'
 
@@ -11,20 +11,27 @@ export class LoginController implements Controller {
   }
 
   async handle (httpRequest: HttpRequest): Promise<HttpResponse> {
-    const { email, password } = httpRequest.body
+    try {
+      const { email, password } = httpRequest.body
 
-    if (!email) {
-      return Promise.resolve(badRequest(new MissingParamError('email')))
-    }
-    if (!password) {
-      return Promise.resolve(badRequest(new MissingParamError('password')))
-    }
+      if (!email) {
+        return Promise.resolve(badRequest(new MissingParamError('email')))
+      }
+      if (!password) {
+        return Promise.resolve(badRequest(new MissingParamError('password')))
+      }
 
-    const isValid = this.emailValidator.isValid(String(email))
-    if (!isValid) {
-      return Promise.resolve(badRequest(new InvalidParamError('email')))
-    }
+      const isValid = this.emailValidator.isValid(String(email))
+      if (!isValid) {
+        return Promise.resolve(badRequest(new InvalidParamError('email')))
+      }
 
-    return Promise.resolve({ statusCode: 200, body: {} })
+      return Promise.resolve({ statusCode: 200, body: {} })
+    } catch (error) {
+      if (error instanceof Error) {
+        return serverError(error)
+      }
+      return serverError(new Error('Unknown error'))
+    }
   }
 }
