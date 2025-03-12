@@ -1,6 +1,6 @@
 import type { Validation } from './validation'
 
-export class ValidationConposite implements Validation {
+export class ValidationComposite implements Validation {
   private readonly validations: Validation[]
 
   constructor (validations: Validation[]) {
