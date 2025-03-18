@@ -5,13 +5,8 @@ import type { AccountModel } from '../add-account/db-add-account-protocols'
 export class DbLoadAccountByToken implements LoadAccountByToken {
   constructor (private readonly decrypter: Decrypter) {}
 
-  async load (accessToken: string, role?: string): Promise<AccountModel> {
+  async load (accessToken: string, role?: string): Promise<AccountModel | null> {
     await this.decrypter.decrypt(accessToken)
-    return Promise.resolve({
-      id: 'valid_id',
-      name: 'valid_name',
-      email: 'valid_email',
-      password: 'valid_password'
-    })
+    return Promise.resolve(null)
   }
 }
