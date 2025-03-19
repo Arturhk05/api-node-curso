@@ -20,7 +20,7 @@ describe('Survey Routes', () => {
   })
 
   describe('POST /surveys', () => {
-    test('Should return 200 on signup', async () => {
+    test('Should return 403 on add survey without access token', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       await request(app)
         .post('/api/surveys')
@@ -33,7 +33,7 @@ describe('Survey Routes', () => {
             answer: 'Answer 2'
           }]
         })
-        .expect(204)
+        .expect(403)
     })
   })
 })
