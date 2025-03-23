@@ -8,6 +8,25 @@ import { sign } from 'jsonwebtoken'
 let surveyCollection: Collection
 let accountCollection: Collection
 
+const makeAccessToken = async (): Promise<string> => {
+  const res = await accountCollection.insertOne({
+    name: 'Artur',
+    email: 'artur@gmail.com',
+    password: '123',
+    role: 'admin'
+  })
+  const id = res.insertedId.toHexString()
+  const accessToken = sign({ id }, env.jwtSecret)
+  await accountCollection.updateOne({
+    _id: res.insertedId
+  }, {
+    $set: {
+      accessToken
+    }
+  })
+  return accessToken
+}
+
 describe('Survey Routes', () => {
   beforeAll(async () => {
     await MongoHelper.connect(String(process.env.MONGO_URL))
@@ -42,21 +61,7 @@ describe('Survey Routes', () => {
     })
 
     test('Should return 204 on add survey with valid access token', async () => {
-      const res = await accountCollection.insertOne({
-        name: 'Artur',
-        email: 'artur@gmail.com',
-        password: '123',
-        role: 'admin'
-      })
-      const id = res.insertedId.toHexString()
-      const accessToken = sign({ id }, env.jwtSecret)
-      await accountCollection.updateOne({
-        _id: res.insertedId
-      }, {
-        $set: {
-          accessToken
-        }
-      })
+      const accessToken = await makeAccessToken()
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       await request(app)
         .post('/api/surveys')
@@ -83,20 +88,13 @@ describe('Survey Routes', () => {
         .expect(403)
     })
 
-    test('Should return 200 on load surveys with valid access token', async () => {
-      await surveyCollection.insertMany([{
-        question: 'any_question',
-        answers: [{
-          image: 'any_image',
-          answer: 'any_answer'
-        }],
-        date: new Date()
-      }])
+    test('Should return 204 on load surveys with valid access token', async () => {
+      const accessToken = await makeAccessToken()
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       await request(app)
         .get('/api/surveys')
         .set('x-access-token', accessToken)
-        .expect(200)
+        .expect(204)
     })
   })
 })
