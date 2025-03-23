@@ -40,37 +40,47 @@ describe('Survey Routes', () => {
         })
         .expect(403)
     })
+
+    test('Should return 204 on add survey with valid access token', async () => {
+      const res = await accountCollection.insertOne({
+        name: 'Artur',
+        email: 'artur@gmail.com',
+        password: '123',
+        role: 'admin'
+      })
+      const id = res.insertedId.toHexString()
+      const accessToken = sign({ id }, env.jwtSecret)
+      await accountCollection.updateOne({
+        _id: res.insertedId
+      }, {
+        $set: {
+          accessToken
+        }
+      })
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      await request(app)
+        .post('/api/surveys')
+        .set('x-access-token', accessToken)
+        .send({
+          question: 'Question',
+          answers: [{
+            image: 'https://image-name.com',
+            answer: 'Answer 1'
+          }, {
+            answer: 'Answer 2'
+          }]
+        })
+        .expect(204)
+    })
   })
 
-  test('Should return 204 on add survey with valid access token', async () => {
-    const res = await accountCollection.insertOne({
-      name: 'Artur',
-      email: 'artur@gmail.com',
-      password: '123',
-      role: 'admin'
+  describe('GET /surveys', () => {
+    test('Should return 403 on load surveys without access token', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      await request(app)
+        .get('/api/surveys')
+        .send()
+        .expect(403)
     })
-    const id = res.insertedId.toHexString()
-    const accessToken = sign({ id }, env.jwtSecret)
-    await accountCollection.updateOne({
-      _id: res.insertedId
-    }, {
-      $set: {
-        accessToken
-      }
-    })
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    await request(app)
-      .post('/api/surveys')
-      .set('x-access-token', accessToken)
-      .send({
-        question: 'Question',
-        answers: [{
-          image: 'https://image-name.com',
-          answer: 'Answer 1'
-        }, {
-          answer: 'Answer 2'
-        }]
-      })
-      .expect(204)
   })
 })
