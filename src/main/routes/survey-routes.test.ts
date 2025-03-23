@@ -82,5 +82,21 @@ describe('Survey Routes', () => {
         .send()
         .expect(403)
     })
+
+    test('Should return 200 on load surveys with valid access token', async () => {
+      await surveyCollection.insertMany([{
+        question: 'any_question',
+        answers: [{
+          image: 'any_image',
+          answer: 'any_answer'
+        }],
+        date: new Date()
+      }])
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      await request(app)
+        .get('/api/surveys')
+        .set('x-access-token', accessToken)
+        .expect(200)
+    })
   })
 })
