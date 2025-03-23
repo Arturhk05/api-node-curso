@@ -1,5 +1,5 @@
-import type { SurveysModel } from '../models/survey'
+import type { SurveyModel } from '../models/survey'
 
 export interface LoadSurveys {
-  load: () => Promise<SurveysModel[]>
+  load: () => Promise<SurveyModel[]>
 }
